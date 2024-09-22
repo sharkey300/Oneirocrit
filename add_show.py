@@ -1,5 +1,6 @@
 import requests
 import spacy
+from spacytextblob.spacytextblob import SpacyTextBlob
 from bs4 import BeautifulSoup
 from tqdm.auto import tqdm
 import json
