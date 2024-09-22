@@ -332,7 +332,7 @@ def add_show(show, show_name):
                 episode = title
             if not show_map.get(season):
                 show_map[season] = {}
-            show_map[season][episode] = title
+            show_map[season][f'{episode}.txt'] = title
             path = f"{SHOW_DIR}/formatted/{season}"
             Path(path).mkdir(exist_ok=True, parents=True)
             content = soup.find('div', class_='content')
@@ -342,6 +342,9 @@ def add_show(show, show_name):
             formatted_text = '\n'.join([uncensor_line(line) for line in text.split('\n')])
             with open(f'{path}/{episode}.txt', 'w', encoding='utf-8') as f:
                 f.write(f"{title}\n{formatted_text}")
+
+    with open(f'{SHOW_DIR}/meta/map.json', 'w', encoding='utf-8') as f:
+            json.dump(show_map, f)
 
     ### Analysis
 
