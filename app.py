@@ -23,6 +23,9 @@ matplotlib.use('Agg')
 app = Flask(__name__)
 PARENT_DIR = 'forever_dreaming'
 
+if not os.path.isdir(PARENT_DIR):
+    os.mkdir(PARENT_DIR)
+
 ### ENDPOINTS
 
 @app.route('/')
