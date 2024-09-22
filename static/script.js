@@ -623,7 +623,6 @@ function initCollapsibleBars() {
     if (Object.keys(showMap).length === 0) {
         const helpBar = document.querySelector('.help')
         const helpArrow = helpBar.querySelector('.arrow')
-        console.log(helpBar, helpArrow)
         helpArrow.click()
     }
 }
@@ -834,6 +833,10 @@ function searchForums(substring) {
         if (forum.dataset.title.toLowerCase().includes(substring.toLowerCase())) forum.style.display = 'list-item'
         else forum.style.display = 'none'
     })
+    if (substring !== '') {
+        const importArrow = document.querySelector('.import .arrow')
+        if (importArrow.textContent === '▼') importArrow.click()
+    }
 }
 
 function createImportBar() {
