@@ -1,6 +1,7 @@
 import json
 import matplotlib
 import os
+import subprocess
 from flask import Flask, render_template, request, jsonify
 
 from util.constants import PARENT_DIR
@@ -82,4 +83,8 @@ def wordcloud():
         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
-    Flask.run(app)
+    if 'WEBSITE_HOSTNAME' in os.environ:
+        # Running on Azure App Service
+        subprocess.run(['gunicorn', '-w', '4', '-b', '0.0.0.0:8000', 'app:app'])
+    else:
+        app.run(debug=True)
