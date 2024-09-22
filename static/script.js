@@ -200,18 +200,9 @@ function navigateSeason(show, season) {
 function navigateEpisode(show, season, episode) {
     clearNav()
     addPathBar(show, season, episode)
-    const path = `${show}/formatted/${season}/${episode}`
-    readFile(path).then((text) => {
-        text = text.split('\n')
-        const title = text.shift()
-        text = text.join('\n')
-        const titleElement = document.createElement('h2')
-        titleElement.textContent = title
-        nav.appendChild(titleElement)
-        const script = document.createElement('p')
-        script.textContent = text
-        nav.appendChild(script)
-    })
+    const demoText = document.createElement('p')
+    demoText.textContent = 'Viewing transcripts is not available in the demo.'
+    nav.appendChild(demoText)
     nav.dataset.mode = 'episode'
     displayAiredRange()
     setBackgroundColor(BackgroundState.EPISODE)
@@ -904,7 +895,7 @@ function createHelpBar() {
     helpBar.appendChild(document.createElement('hr'))
     const helpText = document.createElement('span')
     helpText.style.margin = '3px'
-    helpText.textContent = 'This is a tool to analyze shows. To get started, you will need to import a show. Open the import tab and search for a show. Click on a show to import it. Once imported, you can navigate through the show by clicking on the show, season, or episode in the navigation bar. To go back, right click in the navigation window or click on the text in the top navigation bar. You can also save pages by clicking the [+] button next to the saved pages header. Once you nagivate to a show, season, or episode, the word frequency for that show, season, or episode will display in the middle column. You can filter the word frequency by part of speech by clicking on the filter bar. You can also search for specific words by typing in the search bar. Click on words in the word frequency to mark them. To visualize the analysis, click on the visualize button. You can visualize multiple words at once by checking the visualize multiple checkbox. You can also create a word cloud by clicking on the word cloud button. To clear the visualization, click on the clear button. To remove a saved page, click on the [-] button next to the saved page.'
+    helpText.textContent = 'This is a tool to analyze shows. You can navigate by clicking on a show, season, or episode in the navigation bar. To go back, right click in the navigation window or click on the text in the top navigation bar. You can also save pages by clicking the [+] button next to the saved pages header. Once you nagivate to a show, season, or episode, the word frequency for that show, season, or episode will display in the middle column. You can filter the word frequency by part of speech by clicking on the filter bar. You can also search for specific words by typing in the search bar. Click on words in the word frequency to mark them. To visualize the analysis, click on the visualize button. You can visualize multiple words at once by checking the visualize multiple checkbox. You can also create a word cloud by clicking on the word cloud button. To clear the visualization, click on the clear button. To remove a saved page, click on the [-] button next to the saved page. Importing shows and viewing transcripts are not available in the demo; download the full version to access these features.'
     helpBar.appendChild(helpText)
 }
 
@@ -937,7 +928,7 @@ document.addEventListener('DOMContentLoaded', async() => {
     navigateOverview()
     updateSavedPages()
     createFilterBar()
-    createImportBar()
+    // createImportBar()
     createHelpBar()
     initCollapsibleBars()
     setupVisualization()

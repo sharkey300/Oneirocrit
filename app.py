@@ -5,7 +5,7 @@ import webbrowser
 from flask import Flask, render_template, request, jsonify
 
 from util.constants import PARENT_DIR
-from add_show import add_show
+# from add_show import add_show
 from visualize import generate_heatmap, generate_wordcloud
 
 matplotlib.use('Agg')
@@ -83,16 +83,16 @@ def wordcloud():
         print(e)
         return jsonify({'error': str(e)}), 400
 
-@app.route('/api/add_show')
-def import_show():
-    show = request.args.get('show')
-    name = request.args.get('name')
-    try:
-        add_show(show, name)
-        return jsonify({'success': True})
-    except Exception as e:
-        print(e)
-        return jsonify({'error': str(e)}), 400
+# @app.route('/api/add_show')
+# def import_show():
+#     show = request.args.get('show')
+#     name = request.args.get('name')
+#     try:
+#         add_show(show, name)
+#         return jsonify({'success': True})
+#     except Exception as e:
+#         print(e)
+#         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
     webbrowser.open('http://localhost:5000')
