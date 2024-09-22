@@ -876,8 +876,19 @@ function importShow(forum) {
     progress.textContent = `Currently importing ${forum.title}. Check the server console for progress.`
     const importBar = document.querySelector('.import')
     importBar.appendChild(progress)
-    fetch(`/api/add_show?show=${forum.id}&name=${encodeURIComponent(forum.title)}`).then((response) => {
-        if (response.ok) progress.textContent = `Successfully imported ${forum.title}. Refresh the page to view the show.`
+    fetch(`/api/add_show?show=${forum.id}&name=${encodeURIComponent(forum.title)}`).then( async(response) => {
+        if (response.ok) {
+            // progress.textContent = `Successfully imported ${forum.title}. Refresh the page to view the show.`
+            let newShowMap = await getJSONfromAPI('showmap')
+            let newShowTitles = await getJSONfromAPI('showtitles')
+            showMap = newShowMap
+            showTitles = newShowTitles
+            if (document.querySelector('.path-bar').childNodes.length === 1) {
+                navigateOverview()
+            }
+            progress.remove()
+            importBar.appendChild(importList)
+        }
         else progress.textContent = `Error importing ${forum.title}. Check the server console for details.`
     })
 }
