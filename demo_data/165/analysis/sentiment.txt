@@ -60,4 +60,3 @@
 5x14.txt: 0.103 0.469
 5x15.txt: 0.142 0.472
 5x16.txt: 0.15 0.492
-Breaking Bad Transcript Index.txt: 0.051 0.462
