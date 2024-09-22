@@ -200,7 +200,7 @@ function navigateSeason(show, season) {
 function navigateEpisode(show, season, episode) {
     clearNav()
     addPathBar(show, season, episode)
-    const path = `${show}/uncensored/${season}/${episode}`
+    const path = `${show}/formatted/${season}/${episode}`
     readFile(path).then((text) => {
         text = text.split('\n')
         const title = text.shift()

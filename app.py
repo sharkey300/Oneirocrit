@@ -333,20 +333,20 @@ def add_show(show, show_name):
             if not show_map.get(season):
                 show_map[season] = {}
             show_map[season][episode] = title
-            path = f"{SHOW_DIR}/uncensored/{season}"
+            path = f"{SHOW_DIR}/formatted/{season}"
             Path(path).mkdir(exist_ok=True, parents=True)
             content = soup.find('div', class_='content')
             text = content.text
             if '*' in title:
                 title = uncensor_line(title)
-            uncensored_text = '\n'.join([uncensor_line(line) for line in text.split('\n')])
+            formatted_text = '\n'.join([uncensor_line(line) for line in text.split('\n')])
             with open(f'{path}/{episode}.txt', 'w', encoding='utf-8') as f:
-                f.write(f"{title}\n{uncensored_text}")
+                f.write(f"{title}\n{formatted_text}")
 
     ### Analysis
 
     def get_text_from_episode(season, episode):
-        episode_path = f'{SHOW_DIR}/uncensored/{season}/{episode}'
+        episode_path = f'{SHOW_DIR}/formatted/{season}/{episode}'
         with open(episode_path, 'r', encoding='utf-8') as f:
             return '\n'.join(f.readlines()[1:])
 
@@ -381,7 +381,7 @@ def add_show(show, show_name):
         show_frequency = {}
         show_order = []
         show_sentiment = {}
-        show_path = f'{SHOW_DIR}/uncensored'
+        show_path = f'{SHOW_DIR}/formatted'
         seasons = os.listdir(show_path)
         with tqdm(total=len(pages), desc="[4/4] Analyzing Show") as pbar:
             for season in seasons:
