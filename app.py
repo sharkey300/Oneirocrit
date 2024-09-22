@@ -1,7 +1,6 @@
 import json
 import matplotlib
 import os
-import webbrowser
 from flask import Flask, render_template, request, jsonify
 
 from util.constants import PARENT_DIR
@@ -95,5 +94,4 @@ def wordcloud():
 #         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
-    webbrowser.open('http://localhost:5000')
     Flask.run(app)
