@@ -23,6 +23,7 @@ def index():
 @app.route('/api/read')
 def read_file():
     path = request.args.get('path')
+    path = path.replace('..', '').replace('//', '/').replace('\\', '/').lstrip('/')
     try:
         with open(f'{PARENT_DIR}/{path}', 'r', encoding='utf-8') as f:
             content = f.read()
