@@ -15,8 +15,7 @@ def add_show(show, show_name):
     ### SETUP
     SHOW_DIR = f'{PARENT_DIR}/{show}'
     if os.path.isdir(SHOW_DIR):
-        print(f'Attempted to import show {show_name} but it already exists! To reimport, delete the show directory ({SHOW_DIR}) and try again.')
-        return
+        raise Exception(f'Attempted to import show {show_name} but it already exists! To reimport, delete the show directory ({SHOW_DIR}) and try again.')
     Path(SHOW_DIR).mkdir(exist_ok=True)
     Path(f'{SHOW_DIR}/meta').mkdir(exist_ok=True)
     Path(f'{SHOW_DIR}/raw').mkdir(exist_ok=True)
