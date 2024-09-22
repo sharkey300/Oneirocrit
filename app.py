@@ -259,7 +259,6 @@ def add_show(show, show_name):
     Path(SHOW_DIR).mkdir(exist_ok=True)
     Path(f'{SHOW_DIR}/meta').mkdir(exist_ok=True)
     Path(f'{SHOW_DIR}/raw').mkdir(exist_ok=True)
-    Path(f'{SHOW_DIR}/formatted').mkdir(exist_ok=True)
 
     print(f'Importing {show_name}...')
 
@@ -283,7 +282,7 @@ def add_show(show, show_name):
 
     pages = []
 
-    for i in tqdm(range(pageCount), desc=f'[1/5] Scraping {title}'):
+    for i in tqdm(range(pageCount), desc=f'[1/4] Scraping {title}'):
         url = 'https://transcripts.foreverdreaming.org/viewforum.php?f=' + str(show) + '&start=' + str(i * 78)
         response = requests.get(url)
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -295,19 +294,14 @@ def add_show(show, show_name):
 
     pages = list(set(pages))
 
-    pages.remove('32146') if '32146' in pages else None
-
+    if '32146' in pages:
+        pages.remove('32146')
 
     pages = list(map(lambda x: 'https://transcripts.foreverdreaming.org/viewtopic.php?t=' + x, pages))
 
-    csvfile = open(f'{SHOW_DIR}/meta/urls.csv', 'w')
-    csvwriter = csv.writer(csvfile)
-    csvwriter.writerow(pages)
-    csvfile.close()
-
     ### Download all pages
 
-    for page in tqdm(pages, desc='[2/5] Downloading pages'):
+    for page in tqdm(pages, desc='[2/4] Downloading pages'):
         response = requests.get(page)
         with open(f'{SHOW_DIR}/raw/{page.split("=")[1]}.html', 'w', encoding='utf-8') as f:
             f.write(response.text)
@@ -316,7 +310,17 @@ def add_show(show, show_name):
 
     pages = os.listdir(f'{SHOW_DIR}/raw')
 
-    for page in tqdm(pages, desc='[3/5] Formatting pages'):
+    with open("util/uncensor.json") as f:
+        uncensor = json.load(f)
+
+    def uncensor_line(line):
+        for word in uncensor.keys():
+            line = line.replace(word, uncensor[word])
+        return line
+
+    show_map = {}
+
+    for page in tqdm(pages, desc='[3/4] Formatting pages'):
         with open(f'{SHOW_DIR}/raw/{page}', 'r', encoding='utf-8') as f:
             soup = BeautifulSoup(f.read(), 'html.parser')
             title = soup.find('h2', class_='topic-title').text
@@ -326,47 +330,18 @@ def add_show(show, show_name):
             except:
                 season = "other"
                 episode = title
-            path = f"{SHOW_DIR}/formatted/{season}"
+            if not show_map.get(season):
+                show_map[season] = {}
+            show_map[season][episode] = title
+            path = f"{SHOW_DIR}/uncensored/{season}"
             Path(path).mkdir(exist_ok=True, parents=True)
             content = soup.find('div', class_='content')
             text = content.text
+            if '*' in title:
+                title = uncensor_line(title)
+            uncensored_text = '\n'.join([uncensor_line(line) for line in text.split('\n')])
             with open(f'{path}/{episode}.txt', 'w', encoding='utf-8') as f:
-                f.write(f"{title}\n{text}")
-
-    ### Uncensoring and Mapping
-
-    with open("util/uncensor.json") as f:
-        uncensor = json.load(f)
-
-    def save_uncensored_file(season, episode, lines):
-        path = f'{SHOW_DIR}/uncensored/{season}'
-        Path(path).mkdir(parents=True, exist_ok=True)
-        with open(f'{path}/{episode}', 'w', encoding='utf-8') as file:
-            file.writelines(lines)
-
-    def uncensor_line(line):
-        for word in uncensor.keys():
-            line = line.replace(word, uncensor[word])
-        return line
-
-    def uncensor_file_and_get_name(season, episode):
-        with open(f'{SHOW_DIR}/formatted/{season}/{episode}', 'r', encoding='utf-8') as file:
-            lines = file.readlines()
-            uncensored_lines = [uncensor_line(line) for line in lines]
-            save_uncensored_file(season, episode, uncensored_lines)
-            return uncensored_lines[0].strip()
-
-    show_map = {}
-    with tqdm(total=len(pages), desc='[4/5] Uncensoring and Mapping') as pbar:
-        for season in os.listdir(f'{SHOW_DIR}/formatted'):
-            season_map = {}
-            for episode in os.listdir(f'{SHOW_DIR}/formatted/{season}'):
-                name = uncensor_file_and_get_name(season, episode)
-                season_map[episode] = name
-                pbar.update()
-            show_map[season] = season_map
-        with open(f'{SHOW_DIR}/meta/map.json', 'w', encoding='utf-8') as f:
-            json.dump(show_map, f)
+                f.write(f"{title}\n{uncensored_text}")
 
     ### Analysis
 
@@ -408,7 +383,7 @@ def add_show(show, show_name):
         show_sentiment = {}
         show_path = f'{SHOW_DIR}/uncensored'
         seasons = os.listdir(show_path)
-        with tqdm(total=len(pages), desc="[5/5] Analyzing Show") as pbar:
+        with tqdm(total=len(pages), desc="[4/4] Analyzing Show") as pbar:
             for season in seasons:
                 season_frequency = {}
                 season_order = []
