@@ -93,7 +93,7 @@ def add_show(show, show_name):
                 episode = title
             if not show_map.get(season):
                 show_map[season] = {}
-                episode_ids[season] = []
+                episode_ids[season] = {}
             show_map[season][f'{episode}.txt'] = title
             episode_ids[season][f'{episode}.txt'] = page.split('.')[0]
             path = f"{SHOW_DIR}/formatted/{season}"
