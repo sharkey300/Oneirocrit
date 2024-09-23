@@ -929,6 +929,7 @@ nav.oncontextmenu = () => {
 
 document.addEventListener('DOMContentLoaded', async() => {
     const pathBar = document.querySelector('.path-bar')
+    pathBar.textContent = 'Loading... (0/2)'
     let showInfo = await getJSONfromAPI('showinfo')
     pathBar.textContent = 'Loading... (1/2)'
     showMap = showInfo.maps
