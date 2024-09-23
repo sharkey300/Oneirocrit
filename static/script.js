@@ -910,6 +910,7 @@ function createHelpBar() {
 
 let showMap = {}
 let showTitles = {}
+let episodeIds = {}
 let forums = []
 let nav = document.querySelector('.nav-content')
 let frequency = document.querySelector('.frequency-content')
@@ -928,12 +929,13 @@ nav.oncontextmenu = () => {
 
 document.addEventListener('DOMContentLoaded', async() => {
     const pathBar = document.querySelector('.path-bar')
-    showMap = await getJSONfromAPI('showmap')
-    pathBar.textContent = 'Loading... (1/3)'
-    showTitles = await getJSONfromAPI('showtitles')
-    pathBar.textContent = 'Loading... (2/3)'
+    let showInfo = await getJSONfromAPI('showinfo')
+    pathBar.textContent = 'Loading... (1/2)'
+    showMap = showInfo.maps
+    showTitles = showInfo.titles
+    episodeIds = showInfo.ids
     forums = await getJSONfromAPI('forums')
-    pathBar.textContent = 'Loading... (3/3)'
+    pathBar.textContent = 'Loading... (2/2)'
     navigateOverview()
     updateSavedPages()
     createFilterBar()

@@ -37,6 +37,23 @@ def list_forums():
         forums = json.load(f)
     return jsonify(forums)
 
+@app.route('/api/showinfo')
+def show_info():
+    shows = os.listdir(PARENT_DIR)
+    response = {
+        'maps': {},
+        'titles': {},
+        'ids': {}
+    }
+    for show in shows:
+        with open(f'{PARENT_DIR}/{show}/meta/map.json') as f:
+            response.get('maps')[show] = json.load(f)
+        with open(f'{PARENT_DIR}/{show}/meta/title.txt') as f:
+            response.get('titles')[show] = f.read()
+        with open(f'{PARENT_DIR}/{show}/meta/ids.json') as f:
+            response.get('ids')[show] = json.load(f)
+    return jsonify(response)
+
 @app.route('/api/showmap')
 def map_files():
     shows = os.listdir(PARENT_DIR)
