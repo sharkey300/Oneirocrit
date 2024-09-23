@@ -79,6 +79,7 @@ def add_show(show, show_name):
         return line
 
     show_map = {}
+    episode_ids = {}
 
     for page in tqdm(pages, desc='[3/4] Formatting pages'):
         with open(f'{SHOW_DIR}/raw/{page}', 'r', encoding='utf-8') as f:
@@ -92,7 +93,9 @@ def add_show(show, show_name):
                 episode = title
             if not show_map.get(season):
                 show_map[season] = {}
+                episode_ids[season] = []
             show_map[season][f'{episode}.txt'] = title
+            episode_ids[season][f'{episode}.txt'] = page.split('.')[0]
             path = f"{SHOW_DIR}/formatted/{season}"
             Path(path).mkdir(exist_ok=True, parents=True)
             content = soup.find('div', class_='content')
@@ -105,6 +108,9 @@ def add_show(show, show_name):
 
     with open(f'{SHOW_DIR}/meta/map.json', 'w', encoding='utf-8') as f:
             json.dump(show_map, f)
+
+    with open(f'{SHOW_DIR}/meta/ids.json', 'w', encoding='utf-8') as f:
+            json.dump(episode_ids, f)
 
     ### Analysis
 
