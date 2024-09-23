@@ -120,15 +120,20 @@ body {
     display: block;
 }
 
-.nav ul li {
-    padding: 3px;
-    list-style-type: none;
-    cursor: pointer;
-}
-
 .frequency ul li,
 .order ul li {
     padding: 1px 3px;
+}
+
+.nav ul,
+.filter ul {
+    list-style-type: none;
+}
+
+.nav ul li,
+.filter ul li {
+    padding: 3px;
+    cursor: pointer;
 }
 
 ul li:hover,
