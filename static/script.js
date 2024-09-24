@@ -204,7 +204,7 @@ function navigateEpisode(show, season, episode) {
     clearNav()
     addPathBar(show, season, episode)
     const demoText = document.createElement('p')
-    demoText.textContent = 'Viewing transcripts is not available in the demo.'
+    demoText.textContent = 'Viewing transcripts is not available in the demo. Click the "View on Forever Dreaming" button to view the transcript.'
     nav.appendChild(demoText)
     nav.dataset.mode = 'episode'
     displayAiredRange()
