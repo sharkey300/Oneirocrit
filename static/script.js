@@ -256,39 +256,12 @@ function updateAnalysisDisplay(show = null, season = null, episode = null) {
     frequency.textContent = 'Requesting Data...'
     // order.textContent = 'Requesting Data...'
     getFrequency(show, season, episode).then((text) => {
+        requestAnimationFrame(() => {
         frequency.textContent = 'Loading...'
-        // console.log("before callback")
-        // setTimeout(() => {
-            // console.log("callback")
+        setTimeout(() => {
             asyncFrequencyUpdate(text)
-        // }, 5)
-        // console.log("after callback")
-        // frequency.textContent = 'Data Received'
-        // const list = document.createElement('ul')
-        // const frequencyArray = text.split('\n')
-        // frequencyArray.forEach((word, index) => {
-        //     if (word === '') frequencyArray.splice(index, 1)
-        // })
-        // frequencyArray.forEach((word, index) => {
-        //     frequency.textContent = `Loading Data... ${index + 1}/${frequencyArray.length}`
-        //     const entry = document.createElement('li')
-        //     entry.className = 'filterable'
-        //     const number = document.createElement('span')
-        //     number.classList = 'show-on-parent-hover'
-        //     number.textContent = `${index + 1}. `
-        //     let key = word.split('_')[0]
-        //     const part = word.split('_')[1].split(':')[0]
-        //     const count = nf.format(word.split(': ')[1])
-        //     if (part === 'PROPN') key = key[0].toUpperCase() + key.slice(1)
-        //     entry.textContent = `${key}: ${count}`
-        //     entry.dataset.type = part
-        //     entry.insertBefore(number, entry.firstChild)
-        //     list.appendChild(entry)
-        // })
-        // frequency.textContent = ''
-        // frequency.appendChild(list)
-        // const filterLabel = document.querySelector('.filter-label')
-        // applyFilter(filterTypes[filterLabel.textContent])
+        }, 0)
+        })
     }).catch((e) => {
         console.error('Error fetching frequency:', e)
     })
@@ -298,9 +271,6 @@ function updateAnalysisDisplay(show = null, season = null, episode = null) {
 }
 
 async function asyncFrequencyUpdate(text) {
-    // console.log("called")
-    // await new Promise(resolve => setTimeout(resolve, 0))
-    // console.log("going fr")
     frequency.textContent = ''
     const list = document.createElement('ul')
     const frequencyArray = text.split('\n')
@@ -308,12 +278,9 @@ async function asyncFrequencyUpdate(text) {
         if (word === '') frequencyArray.splice(index, 1)
     })
     frequency.appendChild(list)
-    const increment = Math.floor(frequencyArray.length / 10)
     const markedWords = getMarkedWords()
     for (let index = 0; index < frequencyArray.length; index++) {
         const word = frequencyArray[index]
-
-        // frequency.textContent = `Loading Data... ${nf.format(index / frequencyArray.length * 100)}%`
 
         const entry = document.createElement('li')
         entry.className = 'filterable'
@@ -348,9 +315,6 @@ async function asyncFrequencyUpdate(text) {
         entry.title = filterNames[part]
         entry.insertBefore(number, entry.firstChild)
         list.appendChild(entry)
-
-        // Pause execution for a short period to prevent freezing the browser
-        // if (index % increment === 0) await new Promise(resolve => setTimeout(resolve, 0));
     }
     const filterLabel = document.querySelector('.filter-label')
     applyFilter(filterTypes[filterLabel.textContent])
@@ -582,14 +546,12 @@ function createFilterBar() {
 }
 
 function applyFilter(type) {
-    console.log("applying filter")
     const filterable = document.querySelectorAll('.filterable')
     filterable.forEach((element) => {
         if (type === 'ALL') element.style.display = 'block'
         else if (element.dataset.type !== type) element.style.display = 'none'
         else element.style.display = 'block'
     })
-    // if (!doNotSearch) applySearch()
 }
 
 function initCollapsibleBars() {
@@ -601,7 +563,6 @@ function initCollapsibleBars() {
         if (bar.firstElementChild && bar.firstElementChild.firstChild) bar.firstElementChild.insertBefore(arrow, bar.firstElementChild.firstChild)
         else bar.firstElementChild.appendChild(arrow)
         arrow.addEventListener('click', () => {
-            // dont get text-only nodes
             const children = Array.from(bar.children).filter((child) => child.nodeType === 1)
             if (arrow.textContent === '▲') {
                 children.forEach((child) => {
@@ -742,7 +703,6 @@ async function worldCloud(show, season=null, episode=null) {
         const size = visualization.getBoundingClientRect()
         const width = Math.floor(size.width)
         const height = Math.floor(size.height) - 3
-        console.log(width, height, visualization.clientWidth, visualization.clientHeight)
         let path = `/api/wordcloud?width=${width}&height=${height}&show=${show}`
         if (season) path += '&season=' + season
         if (episode) path += '&episode=' + episode
@@ -768,7 +728,6 @@ async function worldCloud(show, season=null, episode=null) {
 }
 
 
-// let typingTimer
 function createSearchBar() {
     const frequencyBar = document.querySelector('.frequency-bar')
     const searchBar = document.createElement('input')
@@ -787,7 +746,6 @@ function createSearchBar() {
 let lastSearchedTerm = ''
 const exactMatchCriteria = /"(\w+)"/
 function applySearch(term = null) {
-    console.log("searching")
     const message = document.getElementById('search-hidden-by-filter-message')
     if (message) message.remove()
     if (term === '') {
