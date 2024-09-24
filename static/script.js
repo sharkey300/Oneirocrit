@@ -898,11 +898,10 @@ function importShow(forum) {
     importBar.appendChild(progress)
     fetch(`/api/add_show?show=${forum.id}&name=${encodeURIComponent(forum.title)}`).then( async(response) => {
         if (response.ok) {
-            // progress.textContent = `Successfully imported ${forum.title}. Refresh the page to view the show.`
-            let newShowMap = await getJSONfromAPI('showmap')
-            let newShowTitles = await getJSONfromAPI('showtitles')
-            showMap = newShowMap
-            showTitles = newShowTitles
+            let showInfo = await getJSONfromAPI('showinfo')
+            showMap = showInfo.maps
+            showTitles = showInfo.titles
+            episodeIds = showInfo.ids
             if (document.querySelector('.path-bar').childNodes.length === 1) {
                 navigateOverview()
             }
