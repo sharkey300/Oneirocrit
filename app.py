@@ -10,7 +10,7 @@ from visualize import generate_heatmap, generate_wordcloud
 
 matplotlib.use('Agg')
 app = Flask(__name__)
-app.json.ensure_ascii = False
+app.config['JSON_AS_ASCII'] = False
 
 if not os.path.isdir(PARENT_DIR):
     os.mkdir(PARENT_DIR)
