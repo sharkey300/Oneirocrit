@@ -146,6 +146,7 @@ function navigateOverview() {
     displayAiredRange()
     setBackgroundColor(BackgroundState.HOME)
     updateAnalysisDisplay()
+    setSource()
 }
 
 function navigateShow(show) {
@@ -169,6 +170,7 @@ function navigateShow(show) {
     displayAiredRange(show)
     setBackgroundColor(BackgroundState.SHOW)
     updateAnalysisDisplay(show)
+    setSource(show)
 }
 
 function navigateSeason(show, season) {
@@ -195,6 +197,7 @@ function navigateSeason(show, season) {
     displayAiredRange()
     setBackgroundColor(BackgroundState.SEASON)
     updateAnalysisDisplay(show, season)
+    setSource(show, season)
 }
 
 function navigateEpisode(show, season, episode) {
@@ -216,6 +219,20 @@ function navigateEpisode(show, season, episode) {
     displayAiredRange()
     setBackgroundColor(BackgroundState.EPISODE)
     updateAnalysisDisplay(show, season, episode)
+    setSource(show, season, episode)
+}
+
+function setSource(show = null, season = null, episode = null) {
+    const source = document.querySelector('.source')
+    if (!show) {
+        source.setAttribute('href', 'https://transcripts.foreverdreaming.org/viewforum.php?f=1662')
+    }
+    else if (!episode) {
+        source.setAttribute('href', `https://transcripts.foreverdreaming.org/viewforum.php?f=${show}`)
+    }
+    else {
+        source.setAttribute('href', `https://transcripts.foreverdreaming.org/viewtopic.php?t=${episodeIds[show][season][episode]}`)
+    }
 }
 
 async function getFrequency(show, season = null, episode = null) {

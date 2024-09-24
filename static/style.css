@@ -244,3 +244,15 @@ ul li:hover,
     height: 90%;
     width: 30%;
 }
+
+.source {
+    text-align: center;
+    color: black;
+    text-decoration: none;
+}
+
+.source:hover {
+    background-color: lightgray;
+    cursor: pointer;
+    text-decoration: underline;
+}
