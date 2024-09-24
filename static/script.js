@@ -146,6 +146,7 @@ function navigateOverview() {
     displayAiredRange()
     setBackgroundColor(BackgroundState.HOME)
     updateAnalysisDisplay()
+    setSource()
 }
 
 function navigateShow(show) {
@@ -169,6 +170,7 @@ function navigateShow(show) {
     displayAiredRange(show)
     setBackgroundColor(BackgroundState.SHOW)
     updateAnalysisDisplay(show)
+    setSource(show)
 }
 
 function navigateSeason(show, season) {
@@ -195,6 +197,7 @@ function navigateSeason(show, season) {
     displayAiredRange()
     setBackgroundColor(BackgroundState.SEASON)
     updateAnalysisDisplay(show, season)
+    setSource(show, season)
 }
 
 function navigateEpisode(show, season, episode) {
@@ -207,6 +210,20 @@ function navigateEpisode(show, season, episode) {
     displayAiredRange()
     setBackgroundColor(BackgroundState.EPISODE)
     updateAnalysisDisplay(show, season, episode)
+    setSource(show, season, episode)
+}
+
+function setSource(show = null, season = null, episode = null) {
+    const source = document.querySelector('.source')
+    if (!show) {
+        source.setAttribute('href', 'https://transcripts.foreverdreaming.org/viewforum.php?f=1662')
+    }
+    else if (!episode) {
+        source.setAttribute('href', `https://transcripts.foreverdreaming.org/viewforum.php?f=${show}`)
+    }
+    else {
+        source.setAttribute('href', `https://transcripts.foreverdreaming.org/viewtopic.php?t=${episodeIds[show][season][episode]}`)
+    }
 }
 
 async function getFrequency(show, season = null, episode = null) {
@@ -901,6 +918,7 @@ function createHelpBar() {
 
 let showMap = {}
 let showTitles = {}
+let episodeIds = {}
 let forums = []
 let nav = document.querySelector('.nav-content')
 let frequency = document.querySelector('.frequency-content')
@@ -919,12 +937,14 @@ nav.oncontextmenu = () => {
 
 document.addEventListener('DOMContentLoaded', async() => {
     const pathBar = document.querySelector('.path-bar')
-    showMap = await getJSONfromAPI('showmap')
-    pathBar.textContent = 'Loading... (1/3)'
-    showTitles = await getJSONfromAPI('showtitles')
-    pathBar.textContent = 'Loading... (2/3)'
+    pathBar.textContent = 'Loading... (0/2)'
+    let showInfo = await getJSONfromAPI('showinfo')
+    pathBar.textContent = 'Loading... (1/2)'
+    showMap = showInfo.maps
+    showTitles = showInfo.titles
+    episodeIds = showInfo.ids
     forums = await getJSONfromAPI('forums')
-    pathBar.textContent = 'Loading... (3/3)'
+    pathBar.textContent = 'Loading... (2/2)'
     navigateOverview()
     updateSavedPages()
     createFilterBar()
