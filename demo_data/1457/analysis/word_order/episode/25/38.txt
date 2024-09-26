@@ -1,0 +1,9 @@
+unaired_ADJ
+english_ADJ
+episode_NOUN
+help_VERB
+translate_VERB
+type_VERB
+email_VERB
+replace_VERB
+thx_PROPN

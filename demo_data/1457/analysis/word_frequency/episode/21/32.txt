@@ -1,0 +1,8 @@
+find_VERB: 1
+episode_NOUN: 1
+want_VERB: 1
+type_VERB: 1
+hand_NOUN: 1
+email_VERB: 1
+replace_VERB: 1
+thx_INTJ: 1

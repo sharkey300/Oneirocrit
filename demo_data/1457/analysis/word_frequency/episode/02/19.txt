@@ -1,0 +1,9 @@
+find_VERB: 1
+episode_NOUN: 1
+feel_VERB: 1
+free_ADJ: 1
+type_VERB: 1
+hand_NOUN: 1
+email_VERB: 1
+replace_VERB: 1
+thank_NOUN: 1

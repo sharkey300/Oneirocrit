@@ -1,0 +1,5 @@
+find_VERB: 1
+episode_NOUN: 1
+help_VERB: 1
+email_VERB: 1
+replace_VERB: 1

@@ -1,0 +1,10 @@
+unaired_ADJ
+english_ADJ
+episode_NOUN
+help_VERB
+translate_VERB
+typing_NOUN
+hand_NOUN
+email_VERB
+replace_VERB
+thx_PROPN

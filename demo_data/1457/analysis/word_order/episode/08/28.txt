@@ -1,0 +1,12 @@
+episode_NOUN
+broadcast_VERB
+united_PROPN
+states_PROPN
+find_VERB
+sub_NOUN
+dub_VERB
+feel_VERB
+free_ADJ
+email_VERB
+add_VERB
+site_VERB
