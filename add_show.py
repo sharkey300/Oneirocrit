@@ -32,7 +32,7 @@ def add_show(show, show_name):
     soup = BeautifulSoup(response.text, 'html.parser')
 
     title = soup.find('h2', class_='forum-title').text
-    with open(f'{SHOW_DIR}/meta/title.txt', 'w') as file:
+    with open(f'{SHOW_DIR}/meta/title.txt', 'w', encoding='utf-8') as file:
         file.write(title)
 
     pageCount = 1
