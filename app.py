@@ -10,7 +10,7 @@ from visualize import generate_heatmap, generate_wordcloud
 
 matplotlib.use('Agg')
 app = Flask(__name__)
-if app.json:
+if hasattr(app, 'json'):
     app.json.ensure_ascii = False
 else:
     app.config['JSON_AS_ASCII'] = False
