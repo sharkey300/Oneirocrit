@@ -10,7 +10,10 @@ from visualize import generate_heatmap, generate_wordcloud
 
 matplotlib.use('Agg')
 app = Flask(__name__)
-app.config['JSON_AS_ASCII'] = False
+if app.json:
+    app.json.ensure_ascii = False
+else:
+    app.config['JSON_AS_ASCII'] = False
 
 if not os.path.isdir(PARENT_DIR):
     os.mkdir(PARENT_DIR)
@@ -47,11 +50,11 @@ def show_info():
         'ids': {}
     }
     for show in shows:
-        with open(f'{PARENT_DIR}/{show}/meta/map.json') as f:
+        with open(f'{PARENT_DIR}/{show}/meta/map.json', encoding='utf-8') as f:
             response.get('maps')[show] = json.load(f)
-        with open(f'{PARENT_DIR}/{show}/meta/title.txt') as f:
+        with open(f'{PARENT_DIR}/{show}/meta/title.txt', encoding='utf-8') as f:
             response.get('titles')[show] = f.read()
-        with open(f'{PARENT_DIR}/{show}/meta/ids.json') as f:
+        with open(f'{PARENT_DIR}/{show}/meta/ids.json', encoding='utf-8') as f:
             response.get('ids')[show] = json.load(f)
     return jsonify(response)
 
@@ -60,7 +63,7 @@ def map_files():
     shows = os.listdir(PARENT_DIR)
     show_map = {}
     for show in shows:
-        with open(f'{PARENT_DIR}/{show}/meta/map.json') as f:
+        with open(f'{PARENT_DIR}/{show}/meta/map.json', encoding='utf-8') as f:
             show_map[show] = json.load(f)
     return jsonify(show_map)
 
@@ -69,7 +72,7 @@ def show_titles():
     shows = os.listdir(PARENT_DIR)
     titles = {}
     for show in shows:
-        with open(f'{PARENT_DIR}/{show}/meta/title.txt') as f:
+        with open(f'{PARENT_DIR}/{show}/meta/title.txt', encoding='utf-8') as f:
             titles[show] = f.read()
     return jsonify(titles)
 
@@ -78,7 +81,7 @@ def episode_ids():
     shows = os.listdir(PARENT_DIR)
     ids = {}
     for show in shows:
-        with open(f'{PARENT_DIR}/{show}/meta/ids.json') as f:
+        with open(f'{PARENT_DIR}/{show}/meta/ids.json', encoding='utf-8') as f:
             ids[show] = json.load(f)
     return jsonify(ids)
 
