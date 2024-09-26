@@ -18,7 +18,7 @@ def load_frequency(show, season = None, episode = None):
         file = f'{PARENT_DIR}/{show}/analysis/word_frequency/season/{season}.txt'
     else:
         file = f'{PARENT_DIR}/{show}/analysis/word_frequency/show.txt'
-    with open(file, 'r') as f:
+    with open(file, 'r', encoding='utf-8') as f:
         for line in f:
             word, freq = line.split(": ")
             frequency[word] = int(freq)
