@@ -12,8 +12,10 @@ matplotlib.use('Agg')
 app = Flask(__name__)
 if hasattr(app, 'json'):
     app.json.ensure_ascii = False
+    print("[!] APP HAS JSON ATTR")
 else:
     app.config['JSON_AS_ASCII'] = False
+    print("[!] APP *DOES NOT* HAVE JSON ATTR")
 
 cache = Cache(app, config={
     'CACHE_TYPE': 'simple',
