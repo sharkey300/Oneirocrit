@@ -35,7 +35,7 @@ def name_frequency_plot(df, starts=None, show=None, season=None, transform=None,
     if transform:
         xy[:, 1:] = transform(xy[:, 1:]) 
     row_count = xy.shape[1] - 1
-    plt.rcParams["figure.figsize"] = (7.5, row_count * stretch_factor)
+    plt.rcParams["figure.figsize"] = (8, row_count * stretch_factor)
     height_ratios = [stretch_factor] * row_count
     
     # thanks stackoverflow:

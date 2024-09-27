@@ -33,6 +33,12 @@ body {
     flex: 2;
 }
 
+.visualization img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
 .bar {
     width: 100%;
     /* min-height: calc(1em + 5px); */
