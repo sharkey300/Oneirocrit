@@ -3,6 +3,7 @@ import matplotlib
 import os
 import webbrowser
 from flask import Flask, render_template, request, jsonify
+from flask_caching import Cache
 
 from util.constants import PARENT_DIR
 from add_show import add_show
@@ -15,6 +16,11 @@ if hasattr(app, 'json'):
 else:
     app.config['JSON_AS_ASCII'] = False
 
+cache = Cache(app, config={
+    'CACHE_TYPE': 'simple',
+    'CACHE_THRESHOLD': 50
+})
+
 if not os.path.isdir(PARENT_DIR):
     os.mkdir(PARENT_DIR)
 
@@ -25,6 +31,7 @@ def index():
     return render_template('index.html')
 
 @app.route('/api/read')
+@cache.cached(timeout=300, query_string=True)
 def read_file():
     path = request.args.get('path')
     path = path.replace('..', '').replace('//', '/').replace('\\', '/').lstrip('/')
@@ -36,12 +43,14 @@ def read_file():
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/forums')
+@cache.cached(timeout=86400)
 def list_forums():
     with open('util/forums.json', encoding='utf-8') as f:
         forums = json.load(f)
     return jsonify(forums)
 
 @app.route('/api/showinfo')
+@cache.cached(timeout=86400)
 def show_info():
     shows = os.listdir(PARENT_DIR)
     response = {
@@ -58,34 +67,8 @@ def show_info():
             response.get('ids')[show] = json.load(f)
     return jsonify(response)
 
-@app.route('/api/showmap')
-def map_files():
-    shows = os.listdir(PARENT_DIR)
-    show_map = {}
-    for show in shows:
-        with open(f'{PARENT_DIR}/{show}/meta/map.json', encoding='utf-8') as f:
-            show_map[show] = json.load(f)
-    return jsonify(show_map)
-
-@app.route('/api/showtitles')
-def show_titles():
-    shows = os.listdir(PARENT_DIR)
-    titles = {}
-    for show in shows:
-        with open(f'{PARENT_DIR}/{show}/meta/title.txt', encoding='utf-8') as f:
-            titles[show] = f.read()
-    return jsonify(titles)
-
-@app.route('/api/episode_ids')
-def episode_ids():
-    shows = os.listdir(PARENT_DIR)
-    ids = {}
-    for show in shows:
-        with open(f'{PARENT_DIR}/{show}/meta/ids.json', encoding='utf-8') as f:
-            ids[show] = json.load(f)
-    return jsonify(ids)
-
 @app.route('/api/heatmap')
+@cache.cached(timeout=300, query_string=True)
 def heatmap():
     words = request.args.get('words').split(',')
     show = request.args.get('show')
@@ -99,6 +82,7 @@ def heatmap():
         return jsonify({'error': str(e)}), 400
     
 @app.route('/api/wordcloud')
+@cache.cached(timeout=300, query_string=True)
 def wordcloud():
     width = request.args.get('width')
     height = request.args.get('height')
