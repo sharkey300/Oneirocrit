@@ -90,7 +90,7 @@ def get_ref_count_by_episode(words, show, season=None, skipOtherSeasons=False):
     if season:
         seasons = [season]
     else:
-        seasons = os.listdir(f'{PARENT_DIR}/{show}/analysis/word_frequency/episode')
+        seasons = sorted(os.listdir(f'{PARENT_DIR}/{show}/analysis/word_frequency/episode'))
         if skipOtherSeasons:
             seasons = [season for season in seasons if season.isdigit() and int(season) >= 1]
 
@@ -111,7 +111,7 @@ def get_ref_count_by_episode(words, show, season=None, skipOtherSeasons=False):
         futures = []
         for season in seasons:
             starts.append(count + 1)
-            episodes = os.listdir(f'{PARENT_DIR}/{show}/analysis/word_frequency/episode/{season}')
+            episodes = sorted(os.listdir(f'{PARENT_DIR}/{show}/analysis/word_frequency/episode/{season}'))
             for episode in episodes:
                 count += 1
                 futures.append(executor.submit(process_episode, season, episode, count))
