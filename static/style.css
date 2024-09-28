@@ -205,7 +205,7 @@ ul li:hover,
 
 .marked-words {
     min-height: 0;
-    max-height: calc(5em + 30px);
+    max-height: calc(5.5em + 15px);
     line-height: 1em;
     overflow-y: auto;
 }
@@ -219,6 +219,14 @@ ul li:hover,
     font-weight: 800;
 }
 
+.marked-words li[data-count]::after {
+    content: ' (' attr(data-count) ')';
+}
+
+.marked-words li[data-count="0"] {
+    color: darkslategray;
+}
+
 .visualization-content :not(:first-child) {
     border-top: 1px solid black;
 }
@@ -227,7 +235,7 @@ ul li:hover,
     border-top: 1px solid black;
 } */
 
-.marked-words li:hover::after {
+.marked-words li:hover::before {
     content: 'Click to Remove';
     float: right;
     margin-right: 10px;
