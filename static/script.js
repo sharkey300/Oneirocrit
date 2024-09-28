@@ -146,6 +146,7 @@ function navigateOverview() {
     displayAiredRange()
     setBackgroundColor(BackgroundState.HOME)
     updateAnalysisDisplay()
+    clearMarkedWordCounts(true)
     setSource()
 }
 
@@ -279,6 +280,7 @@ async function asyncFrequencyUpdate(text) {
     })
     frequency.appendChild(list)
     const markedWords = getMarkedWords()
+    clearMarkedWordCounts()
     for (let index = 0; index < frequencyArray.length; index++) {
         const word = frequencyArray[index]
 
@@ -302,12 +304,15 @@ async function asyncFrequencyUpdate(text) {
             entry.classList.toggle('marked')
             const marked = entry.classList.contains('marked')
             if (marked) {
-                addMarkedWord(entry.dataset.word, entry.dataset.type)
+                addMarkedWord(entry.dataset.word, entry.dataset.type, nf.format(entry.dataset.count))
             } else {
                 removeMarkedWord(entry.dataset.word, entry.dataset.type)
             }
         })
-        if (markedWords.includes(`${key}_${part}`)) entry.classList.add('marked')
+        if (markedWords.includes(`${key}_${part}`)) {
+            entry.classList.add('marked')
+            updateMarkedWord(key, part, count)
+        }
         entry.textContent = `${key}: ${count}`
         entry.dataset.word = key
         entry.dataset.count = word.split(': ')[1]
@@ -362,11 +367,12 @@ async function asyncOrderUpdate(text) {
     applyFilter(filterTypes[filterLabel.textContent]);
 }
 
-function addMarkedWord(word, part) {
+function addMarkedWord(word, part, count) {
     const markedWords = document.querySelector('.marked-words')
     const entry = document.createElement('li')
     entry.dataset.word = word
     entry.dataset.type = part
+    entry.dataset.count = count
     entry.textContent = `${word} (${filterNames[part]})`
     entry.addEventListener('click', () => {
         entry.remove()
@@ -377,6 +383,13 @@ function addMarkedWord(word, part) {
         if (item) item.classList.remove('marked')
     })
     markedWords.appendChild(entry)
+}
+
+function updateMarkedWord(word, part, count) {
+    const markedWords = document.querySelector('.marked-words')
+    const entry = Array.from(markedWords.childNodes).find(el => el.dataset.word === word && el.dataset.type === part)
+    if (entry) entry.dataset.count = count
+    else console.log("could not find entry " + word + " of part " + part)
 }
 
 function removeMarkedWord(word, part) {
@@ -393,6 +406,14 @@ function getMarkedWords() {
         marked.push(`${el.dataset.word}_${el.dataset.type}`)
     })
     return marked
+}
+
+function clearMarkedWordCounts(del = false) {
+    const markedWords = document.querySelector('.marked-words')
+    markedWords.childNodes.forEach(el => {
+        if (del) delete el.dataset.count
+        else el.dataset.count = 0
+    })
 }
 
 function savePage() {
