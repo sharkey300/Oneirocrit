@@ -268,8 +268,9 @@ function updateAnalysisDisplay(show = null, season = null, episode = null) {
     getFrequency(show, season, episode).then((text) => {
         requestAnimationFrame(() => {
         frequency.textContent = 'Loading...'
+        const fastMode = document.querySelector('.fast-mode').textContent === 'Fast Mode'
         setTimeout(() => {
-            asyncFrequencyUpdate(text)
+            asyncFrequencyUpdate(text, fastMode)
         }, 0)
         })
     }).catch((e) => {
@@ -280,7 +281,7 @@ function updateAnalysisDisplay(show = null, season = null, episode = null) {
     // })
 }
 
-async function asyncFrequencyUpdate(text) {
+async function asyncFrequencyUpdate(text, fast = true) {
     frequency.textContent = ''
     const list = document.createElement('ul')
     const frequencyArray = text.split('\n')
@@ -290,7 +291,10 @@ async function asyncFrequencyUpdate(text) {
     frequency.appendChild(list)
     const markedWords = getMarkedWords()
     clearMarkedWordCounts()
-    for (let index = 0; index < frequencyArray.length; index++) {
+    let length = frequencyArray.length
+    if (fast) length = Math.min(length, 500)
+    const updatedWords = []
+    for (let index = 0; index < length; index++) {
         const word = frequencyArray[index]
 
         const entry = document.createElement('li')
@@ -321,6 +325,7 @@ async function asyncFrequencyUpdate(text) {
         if (markedWords.includes(`${key}_${part}`)) {
             entry.classList.add('marked')
             updateMarkedWord(key, part, count)
+            if (fast) updatedWords.push(`${key}_${part}`)
         }
         entry.textContent = `${key}: ${count}`
         entry.dataset.word = key
@@ -329,6 +334,17 @@ async function asyncFrequencyUpdate(text) {
         entry.title = filterNames[part]
         entry.insertBefore(number, entry.firstChild)
         list.appendChild(entry)
+    }
+    if (fast) {
+        const unupdatedWords = markedWords.filter((word) => !updatedWords.includes(word))
+        unupdatedWords.forEach((word) => {
+            const [key, part] = word.split('_')
+            const entry = frequencyArray.find((el) => el.startsWith(key.toLowerCase() + '_'))
+            if (entry) {
+                const count = nf.format(entry.split(': ')[1])
+                updateMarkedWord(key, part, count)
+            }
+        })
     }
     const filterLabel = document.querySelector('.filter-label')
     applyFilter(filterTypes[filterLabel.textContent])
@@ -903,6 +919,18 @@ function createHelpBar() {
     helpBar.appendChild(helpText)
 }
 
+function createFastModeButton() {
+    const frequencyBar = document.querySelector('.frequency-bar')
+    const fastModeButton = document.createElement('button')
+    fastModeButton.textContent = 'Fast Mode'
+    fastModeButton.classList = 'right fast-mode'
+    fastModeButton.title = 'Fast Mode limits the results to 500 words for faster loading'
+    fastModeButton.addEventListener('click', () => {
+        fastModeButton.textContent = (fastModeButton.textContent === 'Fast Mode') ? 'Slow Mode' : 'Fast Mode'
+    })
+    frequencyBar.append(fastModeButton)
+}
+
 let showMap = {}
 let showTitles = {}
 let episodeIds = {}
@@ -940,6 +968,7 @@ document.addEventListener('DOMContentLoaded', async() => {
     initCollapsibleBars()
     setupVisualization()
     createSearchBar()
+    createFastModeButton()
                 // const orderBar = document.querySelector('.order')
                 // let orderTitle = document.createElement('p')
                 // orderTitle.textContent = 'Word Order'
