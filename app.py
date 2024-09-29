@@ -47,7 +47,7 @@ def list_forums():
     return jsonify(forums)
 
 @app.route('/api/showinfo')
-@cache.cached(timeout=86400)
+@cache.memoize(timeout=86400)
 def show_info():
     shows = os.listdir(PARENT_DIR)
     response = {
@@ -114,6 +114,7 @@ def import_show():
     name = request.args.get('name')
     try:
         add_show(show, name)
+        cache.delete_memoized(show_info)
         return jsonify({'success': True})
     except Exception as e:
         print(e)
