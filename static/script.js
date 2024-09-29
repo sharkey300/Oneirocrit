@@ -268,7 +268,7 @@ function updateAnalysisDisplay(show = null, season = null, episode = null) {
     getFrequency(show, season, episode).then((text) => {
         requestAnimationFrame(() => {
         frequency.textContent = 'Loading...'
-        const fastMode = document.querySelector('.fast-mode').textContent === 'Fast Mode'
+        const fastMode = document.querySelector('.quick-mode').textContent === 'Quick Mode'
         setTimeout(() => {
             asyncFrequencyUpdate(text, fastMode)
         }, 0)
@@ -947,16 +947,16 @@ function createHelpBar() {
     helpBar.appendChild(helpText)
 }
 
-function createFastModeButton() {
+function createQuickModeButton() {
     const frequencyBar = document.querySelector('.frequency-bar')
-    const fastModeButton = document.createElement('button')
-    fastModeButton.textContent = 'Fast Mode'
-    fastModeButton.classList = 'right fast-mode'
-    fastModeButton.title = 'Fast Mode limits the results to 500 words for faster loading'
-    fastModeButton.addEventListener('click', () => {
-        fastModeButton.textContent = (fastModeButton.textContent === 'Fast Mode') ? 'Slow Mode' : 'Fast Mode'
+    const quickModeButton = document.createElement('button')
+    quickModeButton.textContent = 'Quick Mode'
+    quickModeButton.classList = 'right quick-mode'
+    quickModeButton.title = 'Quick Mode limits the results to 500 words for faster loading'
+    quickModeButton.addEventListener('click', () => {
+        quickModeButton.textContent = (quickModeButton.textContent === 'Quick Mode') ? 'Full Mode' : 'Quick Mode'
     })
-    frequencyBar.append(fastModeButton)
+    frequencyBar.append(quickModeButton)
 }
 
 let showMap = {}
@@ -996,7 +996,7 @@ document.addEventListener('DOMContentLoaded', async() => {
     initCollapsibleBars()
     setupVisualization()
     createSearchBar()
-    createFastModeButton()
+    createQuickModeButton()
                 // const orderBar = document.querySelector('.order')
                 // let orderTitle = document.createElement('p')
                 // orderTitle.textContent = 'Word Order'
