@@ -31,28 +31,40 @@ def get_name_of_show(show):
     with open(f'{PARENT_DIR}/{show}/meta/title.txt', 'r', encoding='utf-8') as f:
         return f.readline().strip()
 
-def name_frequency_plot(df, starts=None, show=None, season=None, transform=None, color_map='Blues', norm=None, stretch_factor=1):
+def frequency_plot(df, starts=None, show=None, season=None, transform=None, color_map='Blues', norm=None, stretch_factor=1.5, plot_type='heatmap'):
     xy = np.array(df)
     if transform:
         xy[:, 1:] = transform(xy[:, 1:]) 
-    row_count = xy.shape[1] - 1
-    plt.rcParams["figure.figsize"] = (8, row_count * stretch_factor)
-    height_ratios = [stretch_factor] * row_count
-    
-    fig, axs = plt.subplots(nrows=row_count, sharex=True, gridspec_kw={'height_ratios': height_ratios}, constrained_layout=True)
 
-    if row_count == 1:
-        axs = [axs]
+    if plot_type == 'heatmap':
+        row_count = xy.shape[1] - 1
+        plt.rcParams["figure.figsize"] = (8, row_count * stretch_factor)
+        height_ratios = [stretch_factor] * row_count
+        fig, axs = plt.subplots(nrows=row_count, sharex=True, gridspec_kw={'height_ratios': height_ratios}, constrained_layout=True)
+        if row_count == 1:
+            axs = [axs]
+    else:
+        fig, ax = plt.subplots(figsize=(8, 3), constrained_layout=True)
+        axs = [ax]
 
     x = xy[:, 0]
     extent = [x[0]-(x[1]-x[0])/2., x[-1]+(x[1]-x[0])/2.,0,1]
     for ax_i, ax in enumerate(axs):
-        i = ax_i + 1
-        y = xy[:, i]
-        ax.imshow(y[np.newaxis,:], cmap=color_map, aspect="auto", extent=extent, norm=norm)
-        ax.set_yticks([])
-        ax.set_ylabel(format_word(df.columns[i]))
-        ax.set_xlim(extent[0], extent[1])
+        if plot_type == 'heatmap':
+            i = ax_i + 1
+            y = xy[:, i]
+            ax.imshow(y[np.newaxis,:], cmap=color_map, aspect="auto", extent=extent, norm=norm)
+            ax.set_yticks([])
+            ax.set_ylabel(format_word(df.columns[i]))
+            ax.set_xlim(extent[0], extent[1])
+        elif plot_type == 'line':
+            for i in range(1, xy.shape[1]):
+                y = xy[:, i]
+                ax.plot(x, y, label=format_word(df.columns[i]))
+            ax.set_ylabel('Frequency')
+            ax.legend()
+            ax.set_xlim(x[0], x[-1])
+            ax.set_ylim(0, None)
         if starts:
             ax.set_xticks(starts)
             ax.set_xticklabels(generate_season_labels(starts))
@@ -136,7 +148,17 @@ def generate_heatmap(words, show, season=None, smooth_data=True):
     if len(starts) == 1 and season is None:
         season = '-1'
     starts = None if season else starts
-    plot = name_frequency_plot(ref_count, starts=starts, show=show, season=season, color_map=color_map, norm=None, stretch_factor=1.5)
+    plot = frequency_plot(ref_count, starts=starts, show=show, season=season, color_map=color_map)
+    return plot
+
+def generate_line_plot(words, show, season=None, smooth_data=True):
+    ref_count, starts = get_ref_count_by_episode_df(words, show, season)
+    if smooth_data:
+        ref_count = smooth_ref_count(ref_count)
+    if len(starts) == 1 and season is None:
+        season = '-1'
+    starts = None if season else starts
+    plot = frequency_plot(ref_count, starts=starts, show=show, season=season, plot_type='line')
     return plot
 
 def generate_wordcloud(width, height, show, season=None, episode=None, part=None):

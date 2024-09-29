@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, jsonify
 from flask_caching import Cache
 
 from util.constants import PARENT_DIR
-from visualize import generate_heatmap, generate_wordcloud
+from visualize import generate_heatmap, generate_line_plot, generate_wordcloud
 
 matplotlib.use('Agg')
 app = Flask(__name__)
@@ -72,6 +72,20 @@ def heatmap():
     smooth = request.args.get('smooth') == 'true'
     try:
         image = generate_heatmap(words, show, season=season, smooth_data=smooth)
+        return image
+    except Exception as e:
+        print(e)
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/lineplot')
+@cache.cached(timeout=300, query_string=True)
+def lineplot():
+    words = request.args.get('words').split(',')
+    show = request.args.get('show')
+    season = request.args.get('season') or None
+    smooth = request.args.get('smooth') == 'true'
+    try:
+        image = generate_line_plot(words, show, season=season, smooth_data=smooth)
         return image
     except Exception as e:
         print(e)

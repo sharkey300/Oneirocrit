@@ -259,8 +259,9 @@ function updateAnalysisDisplay(show = null, season = null, episode = null) {
     getFrequency(show, season, episode).then((text) => {
         requestAnimationFrame(() => {
         frequency.textContent = 'Loading...'
+        const fastMode = document.querySelector('.quick-mode').textContent === 'Quick Mode'
         setTimeout(() => {
-            asyncFrequencyUpdate(text)
+            asyncFrequencyUpdate(text, fastMode)
         }, 0)
         })
     }).catch((e) => {
@@ -271,7 +272,7 @@ function updateAnalysisDisplay(show = null, season = null, episode = null) {
     // })
 }
 
-async function asyncFrequencyUpdate(text) {
+async function asyncFrequencyUpdate(text, fast = true) {
     frequency.textContent = ''
     const list = document.createElement('ul')
     const frequencyArray = text.split('\n')
@@ -281,7 +282,10 @@ async function asyncFrequencyUpdate(text) {
     frequency.appendChild(list)
     const markedWords = getMarkedWords()
     clearMarkedWordCounts()
-    for (let index = 0; index < frequencyArray.length; index++) {
+    let length = frequencyArray.length
+    if (fast) length = Math.min(length, 500)
+    const updatedWords = []
+    for (let index = 0; index < length; index++) {
         const word = frequencyArray[index]
 
         const entry = document.createElement('li')
@@ -312,6 +316,7 @@ async function asyncFrequencyUpdate(text) {
         if (markedWords.includes(`${key}_${part}`)) {
             entry.classList.add('marked')
             updateMarkedWord(key, part, count)
+            if (fast) updatedWords.push(`${key}_${part}`)
         }
         entry.textContent = `${key}: ${count}`
         entry.dataset.word = key
@@ -320,6 +325,17 @@ async function asyncFrequencyUpdate(text) {
         entry.title = filterNames[part]
         entry.insertBefore(number, entry.firstChild)
         list.appendChild(entry)
+    }
+    if (fast) {
+        const unupdatedWords = markedWords.filter((word) => !updatedWords.includes(word))
+        unupdatedWords.forEach((word) => {
+            const [key, part] = word.split('_')
+            const entry = frequencyArray.find((el) => el.startsWith(key.toLowerCase() + '_'))
+            if (entry) {
+                const count = nf.format(entry.split(': ')[1])
+                updateMarkedWord(key, part, count)
+            }
+        })
     }
     const filterLabel = document.querySelector('.filter-label')
     applyFilter(filterTypes[filterLabel.textContent])
@@ -617,87 +633,115 @@ function initCollapsibleBars() {
     }
 }
 
+function createVisualizationCheckbox(type, id, label, help, checked=true) {
+    const visualizationBar = document.querySelector('.visualization-bar')
+    const checkbox = document.createElement('input')
+    checkbox.type = 'checkbox'
+    checkbox.id = id
+    checkbox.name = id
+    checkbox.checked = checked
+    checkbox.classList = 'visualize-form ' + type
+    const checkboxLabel = document.createElement('label')
+    checkboxLabel.textContent = label + ' '
+    checkboxLabel.htmlFor = id
+    checkboxLabel.title = help
+    checkboxLabel.classList = 'visualize-form ' + type
+    visualizationBar.appendChild(checkboxLabel)
+    visualizationBar.appendChild(checkbox)
+}
+
+function createVisualizationButton(type, name, onClick) {
+    const visualizationBar = document.querySelector('.visualization-bar')
+    const button = document.createElement('button')
+    button.textContent = name
+    button.classList = 'visualize-form ' + type
+    button.addEventListener('click', () => onClick(button))
+    visualizationBar.appendChild(button)
+}
+
+async function frequencyGraph(button, line = false) {
+    const visualizeMultipleCheckbox = document.getElementById('visualize-multiple')
+    const smooth = document.getElementById('smooth').checked
+    const marked = document.querySelector('.marked-words').childNodes
+    if (marked.length === 0) return
+    const words = Array.from(marked).map((element) => element.dataset.word.toLowerCase() + '_' + element.dataset.type)
+    const path = document.querySelector('.path-bar').childNodes
+    if (path.length === 1) {
+        if (!visualizeMultipleCheckbox.checked) {
+            const visualizationContent = document.querySelector('.visualization-content')
+            while (visualizationContent.firstChild) {
+                visualizationContent.removeChild(visualizationContent.firstChild)
+            }
+        }
+        let shows = Object.keys(showMap)
+        for (const show of shows) {
+            await visualizeWords(words, line, show, null, smooth, true)
+        }
+        return
+    }
+    button.disabled = true
+    if (path.length > 3) visualizeWords(words, line, path[2].title, path[4].title, smooth, line).then(() => button.disabled = false)
+    else visualizeWords(words, line, path[2].title, null, smooth).then(() => button.disabled = false)
+}
+
 function setupVisualization() {
     const visualizationBar = document.querySelector('.visualization-bar')
-    const visualizeMultipleCheckbox = document.createElement('input')
-    visualizeMultipleCheckbox.type = 'checkbox'
-    visualizeMultipleCheckbox.id = 'visualize-multiple'
-    visualizeMultipleCheckbox.name = 'visualize-multiple'
-    visualizeMultipleCheckbox.checked = false
-    const visualizeMultipleLabel = document.createElement('label')
-    visualizeMultipleLabel.textContent = 'Visualize Multiple '
-    visualizeMultipleLabel.htmlFor = 'visualize-multiple'
-    visualizeMultipleLabel.title = 'If checked, previous visualizations will not be cleared when displaying new ones'
-    const heatmapButton = document.createElement('button')
-    heatmapButton.textContent = 'Visualize Marked Words'
-    const smoothCheckbox = document.createElement('input')
-    smoothCheckbox.type = 'checkbox'
-    smoothCheckbox.id = 'smooth'
-    smoothCheckbox.name = 'smooth'
-    smoothCheckbox.checked = true
-    const smoothLabel = document.createElement('label')
-    smoothLabel.textContent = ' Smooth '
-    smoothLabel.htmlFor = 'smooth'
-    smoothLabel.title = 'Smoothing is recommended when visualizing many episodes'
-    heatmapButton.addEventListener('click', async () => {
-        const marked = document.querySelector('.marked-words').childNodes
-        if (marked.length === 0) return
-        const words = Array.from(marked).map((element) => element.dataset.word.toLowerCase() + '_' + element.dataset.type)
-        const path = document.querySelector('.path-bar').childNodes
-        if (path.length === 1) {
-            if (!visualizeMultipleCheckbox.checked) {
-                const visualizationContent = document.querySelector('.visualization-content')
-                while (visualizationContent.firstChild) {
-                    visualizationContent.removeChild(visualizationContent.firstChild)
-                }
-            }
-            let shows = Object.keys(showMap)
-            for (const show of shows) {
-                await visualizeWords(words, show, null, smoothCheckbox.checked, true)
-            }
-            return
-        }
-        heatmapButton.disabled = true
-        if (path.length > 3) visualizeWords(words, path[2].title, path[4].title, smoothCheckbox.checked).then(() => heatmapButton.disabled = false)
-        else visualizeWords(words, path[2].title, null, smoothCheckbox.checked).then(() => heatmapButton.disabled = false)
+    visualizationBar.textContent = null
+    const switcher = document.createElement('select')
+    switcher.name = 'switcher'
+    switcher.id = 'switcher'
+    const types = ['Heat Map', 'Line Plot', 'Word Cloud']
+    types.forEach(el => {
+        let option = document.createElement('option')
+        option.value = el.replace(' ', '').toLowerCase()
+        option.textContent = el
+        switcher.appendChild(option)
     })
-    const wordCloudButton = document.createElement('button')
-    wordCloudButton.textContent = 'Word Cloud'
-    wordCloudButton.addEventListener('click', async() => {
-        const path = document.querySelector('.path-bar').childNodes
-        if (path.length === 1) return
-        wordCloudButton.disabled = true
-        if (path.length === 3) await worldCloud(path[2].title)
-        else if (path.length === 5) await worldCloud(path[2].title, path[4].title)
-        else await worldCloud(path[2].title, path[4].title, path[6].title)
-        wordCloudButton.disabled = false
-    })
-    const clearButton = document.createElement('button')
-    clearButton.textContent = 'Clear'
-    clearButton.addEventListener('click', () => {
+    const switchType = function() {
+        const option = switcher.options[switcher.selectedIndex].value
+        const visualizeForm = document.querySelectorAll('.visualize-form')
+        visualizeForm.forEach(el => {
+            el.style.display = el.classList.contains(option) || el.classList.contains('always-show') ? 'inline' : 'none'
+        })
+    }
+    switcher.addEventListener('change', switchType)
+    const switcherLabel = document.createElement('label')
+    switcherLabel.htmlFor = 'switcher'
+    switcherLabel.textContent = 'Data Visualization '
+    switcherLabel.title = 'Change the type of visualization with this dropdown.'
+    visualizationBar.appendChild(switcherLabel)
+    visualizationBar.appendChild(switcher)
+    createVisualizationButton('right always-show', 'Clear', () => {
         const visualizationContent = document.querySelector('.visualization-content')
         while (visualizationContent.firstChild) {
             visualizationContent.removeChild(visualizationContent.firstChild)
         }
     })
-    const separator = document.createElement('span')
-    separator.textContent = ' | '
-    visualizationBar.appendChild(separator)
-    visualizationBar.appendChild(visualizeMultipleLabel)
-    visualizationBar.appendChild(visualizeMultipleCheckbox)
-    visualizationBar.appendChild(separator.cloneNode(true))
-    visualizationBar.appendChild(heatmapButton)
-    visualizationBar.appendChild(smoothLabel)
-    visualizationBar.appendChild(smoothCheckbox)
-    visualizationBar.appendChild(separator.cloneNode(true))
-    visualizationBar.appendChild(wordCloudButton)
-    visualizationBar.appendChild(separator.cloneNode(true))
-    visualizationBar.appendChild(clearButton)
+
+    createVisualizationCheckbox('always-show', 'visualize-multiple', 'Visualize Multiple', 'If checked, previous visualizations will not be cleared when displaying new ones.', false)
+    createVisualizationCheckbox('heatmap lineplot', 'smooth', 'Smooth Data', 'Smoothing reduces the influence of outliers, allowing you to more easily view overall trends. Turn this off if you want to view the true counts for each episode.', true)
+    createVisualizationButton('heatmap right', 'Generate Heatmap', async(button) => {
+        frequencyGraph(button)
+    })
+    createVisualizationButton('lineplot right', 'Generate Line Plot', async(button) => {
+        frequencyGraph(button, true)
+    })
+    createVisualizationButton('wordcloud right', 'Generate Word Cloud', async(button) => {
+        const path = document.querySelector('.path-bar').childNodes
+        if (path.length === 1) return
+        button.disabled = true
+        if (path.length === 3) await wordCloud(path[2].title)
+        else if (path.length === 5) await wordCloud(path[2].title, path[4].title)
+        else await wordCloud(path[2].title, path[4].title, path[6].title)
+        button.disabled = false
+    })
+    switchType()
 }
 
-async function visualizeWords(words, show, season = null, smooth = true, visualizingMultiple = false) {
+async function visualizeWords(words, line, show, season = null, smooth = true, visualizingMultiple = false) {
     try {
-        let path = '/api/heatmap?words=' + words.join(',') + '&show=' + show + '&smooth=' + smooth
+        const type = line ? 'lineplot' : 'heatmap'
+        let path = `/api/${type}?words=${words.join(',')}&show=${show}&smooth=${smooth}`
         if (season) path += '&season=' + season
         const request = await fetch(path)
         const response = await request.text()
@@ -718,7 +762,7 @@ async function visualizeWords(words, show, season = null, smooth = true, visuali
     }
 }
 
-async function worldCloud(show, season=null, episode=null) {
+async function wordCloud(show, season=null, episode=null) {
     try {
         const visualization = document.querySelector('.visualization-content')
         const size = visualization.getBoundingClientRect()
@@ -894,6 +938,18 @@ function createHelpBar() {
     helpBar.appendChild(helpText)
 }
 
+function createQuickModeButton() {
+    const frequencyBar = document.querySelector('.frequency-bar')
+    const quickModeButton = document.createElement('button')
+    quickModeButton.textContent = 'Quick Mode'
+    quickModeButton.classList = 'right quick-mode'
+    quickModeButton.title = 'Quick Mode limits the results to 500 words for faster loading'
+    quickModeButton.addEventListener('click', () => {
+        quickModeButton.textContent = (quickModeButton.textContent === 'Quick Mode') ? 'Full Mode' : 'Quick Mode'
+    })
+    frequencyBar.append(quickModeButton)
+}
+
 let showMap = {}
 let showTitles = {}
 let episodeIds = {}
@@ -931,6 +987,7 @@ document.addEventListener('DOMContentLoaded', async() => {
     initCollapsibleBars()
     setupVisualization()
     createSearchBar()
+    createQuickModeButton()
                 // const orderBar = document.querySelector('.order')
                 // let orderTitle = document.createElement('p')
                 // orderTitle.textContent = 'Word Order'
