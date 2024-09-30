@@ -651,7 +651,7 @@ function createVisualizationCheckbox(type, id, label, help, checked=true) {
     checkbox.checked = checked
     checkbox.classList = 'visualize-form ' + type
     const checkboxLabel = document.createElement('label')
-    checkboxLabel.textContent = label + ' '
+    checkboxLabel.textContent = label
     checkboxLabel.htmlFor = id
     checkboxLabel.title = help
     checkboxLabel.classList = 'visualize-form ' + type
@@ -716,7 +716,7 @@ function setupVisualization() {
     switcher.addEventListener('change', switchType)
     const switcherLabel = document.createElement('label')
     switcherLabel.htmlFor = 'switcher'
-    switcherLabel.textContent = 'Data Visualization '
+    switcherLabel.textContent = 'Data Visualization'
     switcherLabel.title = 'Change the type of visualization with this dropdown.'
     visualizationBar.appendChild(switcherLabel)
     visualizationBar.appendChild(switcher)
@@ -729,7 +729,7 @@ function setupVisualization() {
 
     createVisualizationCheckbox('always-show', 'visualize-multiple', 'Visualize Multiple', 'If checked, previous visualizations will not be cleared when displaying new ones.', false)
     createVisualizationCheckbox('heatmap lineplot', 'smooth', 'Smooth Data', 'Smoothing reduces the influence of outliers, allowing you to more easily view overall trends. Turn this off if you want to view the true counts for each episode.', true)
-    createVisualizationButton('heatmap right', 'Generate Heatmap', async(button) => {
+    createVisualizationButton('heatmap right', 'Generate Heat Map', async(button) => {
         frequencyGraph(button)
     })
     createVisualizationButton('lineplot right', 'Generate Line Plot', async(button) => {

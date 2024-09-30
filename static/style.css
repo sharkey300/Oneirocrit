@@ -52,6 +52,11 @@ body {
     border-bottom: 1px solid black;
 }
 
+.visualization-bar *,
+.frequency-bar * {
+    margin-left: 3px;
+}
+
 .bottom {
     border-top: 1px solid black;
 }
