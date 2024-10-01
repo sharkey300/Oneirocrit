@@ -668,7 +668,7 @@ function createVisualizationButton(type, name, onClick) {
     visualizationBar.appendChild(button)
 }
 
-async function frequencyGraph(button, line = false) {
+async function frequencyGraph(button, type) {
     const visualizeMultipleCheckbox = document.getElementById('visualize-multiple')
     const smooth = document.getElementById('smooth').checked
     const marked = document.querySelector('.marked-words').childNodes
@@ -684,13 +684,13 @@ async function frequencyGraph(button, line = false) {
         }
         let shows = Object.keys(showMap)
         for (const show of shows) {
-            await visualizeWords(words, line, show, null, smooth, true)
+            await visualizeWords(words, type, show, null, smooth, true)
         }
         return
     }
     button.disabled = true
-    if (path.length > 3) visualizeWords(words, line, path[2].title, path[4].title, smooth, line).then(() => button.disabled = false)
-    else visualizeWords(words, line, path[2].title, null, smooth).then(() => button.disabled = false)
+    if (path.length > 3) visualizeWords(words, type, path[2].title, path[4].title, smooth).then(() => button.disabled = false)
+    else visualizeWords(words, type, path[2].title, null, smooth).then(() => button.disabled = false)
 }
 
 function setupVisualization() {
@@ -699,7 +699,7 @@ function setupVisualization() {
     const switcher = document.createElement('select')
     switcher.name = 'switcher'
     switcher.id = 'switcher'
-    const types = ['Heat Map', 'Line Plot', 'Word Cloud']
+    const types = ['Heat Map', 'Line Plot', 'Word Cloud', 'Sentiment']
     types.forEach(el => {
         let option = document.createElement('option')
         option.value = el.replace(' ', '').toLowerCase()
@@ -730,10 +730,10 @@ function setupVisualization() {
     createVisualizationCheckbox('always-show', 'visualize-multiple', 'Visualize Multiple', 'If checked, previous visualizations will not be cleared when displaying new ones.', false)
     createVisualizationCheckbox('heatmap lineplot', 'smooth', 'Smooth Data', 'Smoothing reduces the influence of outliers, allowing you to more easily view overall trends. Turn this off if you want to view the true counts for each episode.', true)
     createVisualizationButton('heatmap right', 'Generate Heat Map', async(button) => {
-        frequencyGraph(button)
+        frequencyGraph(button, 'heatmap')
     })
     createVisualizationButton('lineplot right', 'Generate Line Plot', async(button) => {
-        frequencyGraph(button, true)
+        frequencyGraph(button, 'lineplot')
     })
     createVisualizationButton('wordcloud right', 'Generate Word Cloud', async(button) => {
         const path = document.querySelector('.path-bar').childNodes
@@ -744,12 +744,23 @@ function setupVisualization() {
         else await wordCloud(path[2].title, path[4].title, path[6].title)
         button.disabled = false
     })
+    createVisualizationButton('sentiment right', 'Generate Sentiment', async(button) => {
+        const path = document.querySelector('.path-bar').childNodes
+        if (path.length === 1) return
+        button.disabled = true
+        if (path.length === 3) await sentiment(path[2].title)
+        else await sentiment(path[2].title, path[4].title)
+        button.disabled = false
+    })
     switchType()
 }
 
-async function visualizeWords(words, line, show, season = null, smooth = true, visualizingMultiple = false) {
+async function visualizeWords(words, type, show, season = null, smooth = true, visualizingMultiple = false) {
     try {
-        const type = line ? 'lineplot' : 'heatmap'
+        if (type !== 'heatmap' && type !== 'lineplot') {
+            console.error(`Invalid type "${type}" passed to visualizeWords`)
+            return
+        }
         let path = `/api/${type}?words=${words.join(',')}&show=${show}&smooth=${smooth}`
         if (season) path += '&season=' + season
         const request = await fetch(path)
@@ -801,6 +812,28 @@ async function wordCloud(show, season=null, episode=null) {
     }
 }
 
+async function sentiment(show, season=null) {
+    try {
+        let path = `/api/sentiment?show=${show}`
+        if (season) path += '&season=' + season
+        const request = await fetch(path)
+        const response = await request.text()
+        const image = document.createElement('img')
+        const uri = 'data:image/png;base64,' + response
+        image.src = uri
+        image.alt = 'Sentiment'
+        const visualization = document.querySelector('.visualization-content')
+        if (!document.querySelector('#visualize-multiple').checked) {
+            while (visualization.firstChild) {
+                visualization.removeChild(visualization.firstChild)
+            }
+        }
+        visualization.appendChild(image)
+    } catch (err) {
+        console.error('Error fetching visualization:', err)
+        throw err
+    }
+}
 
 function createSearchBar() {
     const frequencyBar = document.querySelector('.frequency-bar')
