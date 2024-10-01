@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, jsonify
 from flask_caching import Cache
 
 from util.constants import PARENT_DIR
-from visualize import generate_heatmap, generate_line_plot, generate_wordcloud
+from visualize import generate_heatmap, generate_line_plot, generate_wordcloud, generate_sentiment
 
 matplotlib.use('Agg')
 app = Flask(__name__)
@@ -102,6 +102,18 @@ def wordcloud():
     filter = request.args.get('filter') or None
     try:
         image = generate_wordcloud(width, height, show, season=season, episode=episode, part=filter)
+        return image
+    except Exception as e:
+        print(e)
+        return jsonify({'error': str(e)}), 400
+    
+@app.route('/api/sentiment')
+@cache.cached(timeout=300, query_string=True)
+def sentiment():
+    show = request.args.get('show')
+    season = request.args.get('season') or None
+    try:
+        image = generate_sentiment(show, filterSeason=season)
         return image
     except Exception as e:
         print(e)

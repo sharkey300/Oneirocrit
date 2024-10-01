@@ -1,7 +1,9 @@
 import base64
 import io
 import os
+import re
 import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
 import numpy as np
 from pandas import DataFrame as df
 from wordcloud import WordCloud
@@ -33,10 +35,7 @@ def get_name_of_show(show):
 
 def frequency_plot(df, starts=None, show=None, season=None, transform=None, color_map='Blues', norm=None, stretch_factor=1.5, plot_type='heatmap'):
     xy = np.array(df)
-    if transform:
-        xy[:, 1:] = transform(xy[:, 1:]) 
-
-    if plot_type == 'heatmap':
+    if plot_type == 'heatmap' or plot_type == 'sentiment':
         row_count = xy.shape[1] - 1
         plt.rcParams["figure.figsize"] = (8, row_count * stretch_factor)
         height_ratios = [stretch_factor] * row_count
@@ -50,12 +49,13 @@ def frequency_plot(df, starts=None, show=None, season=None, transform=None, colo
     x = xy[:, 0]
     extent = [x[0]-(x[1]-x[0])/2., x[-1]+(x[1]-x[0])/2.,0,1]
     for ax_i, ax in enumerate(axs):
-        if plot_type == 'heatmap':
+        if plot_type == 'heatmap' or plot_type == 'sentiment':
             i = ax_i + 1
             y = xy[:, i]
             ax.imshow(y[np.newaxis,:], cmap=color_map, aspect="auto", extent=extent, norm=norm)
             ax.set_yticks([])
-            ax.set_ylabel(format_word(df.columns[i]))
+            if plot_type == 'heatmap':
+                ax.set_ylabel(format_word(df.columns[i]))
             ax.set_xlim(extent[0], extent[1])
         elif plot_type == 'line':
             for i in range(1, xy.shape[1]):
@@ -69,7 +69,10 @@ def frequency_plot(df, starts=None, show=None, season=None, transform=None, colo
             ax.set_xticks(starts)
             ax.set_xticklabels(generate_season_labels(starts))
         if ax_i == 0:
-            ax.set_title('Frequency of words in ' + (get_name_of_show(show) if show else 'show') + (' Season ' + str(int(season)) if season and int(season) > -1 else '') + ' by episode')
+            if plot_type == 'sentiment':
+                ax.set_title('Polarity of words in ' + (get_name_of_show(show) if show else 'show') + (' Season ' + str(int(season)) if season and int(season) > -1 else '') + ' by episode')
+            else:
+                ax.set_title('Frequency of words in ' + (get_name_of_show(show) if show else 'show') + (' Season ' + str(int(season)) if season and int(season) > -1 else '') + ' by episode')
         if ax_i == len(axs) - 1:
             ax.set_xlabel('Season' if starts else 'Episode')
     buf = io.BytesIO()
@@ -177,3 +180,30 @@ def generate_wordcloud(width, height, show, season=None, episode=None, part=None
     wordcloud.to_image().save(buf, format='PNG')
     buf.seek(0)
     return base64.b64encode(buf.read())
+
+def generate_sentiment(show, filterSeason=None):
+    sentiment = {}
+    starts = []
+    current_season = None
+    with open(f'{PARENT_DIR}/{show}/analysis/sentiment.txt', 'r', encoding='utf-8') as f:
+        index = 0
+        for line in f:
+            if re.match(r'\d+x\d+\.txt: [\d.-]+ [\d.-]+', line):
+                code, analysis = line.split(': ')
+                season, episode = code.split('.txt')[0].split('x')
+                if filterSeason and int(season) != int(filterSeason) or int(season) < 1:
+                    continue
+                polarity, subjectivity = analysis.split(' ')
+                index += 1
+                if season != current_season:
+                    starts.append(index)
+                    current_season = season
+                sentiment[index] = {'polarity': float(polarity)}
+    data_frame = df(sentiment).T
+    data_frame.insert(0, 'episode', data_frame.index)
+    data_frame = data_frame.reset_index(drop=True)
+    if len(starts) == 1 and filterSeason is None:
+        filterSeason = '-1'
+    starts = None if filterSeason else starts
+    plot = frequency_plot(data_frame, starts=starts, season=filterSeason, show=show, color_map='RdYlGn', plot_type='sentiment', norm=Normalize(vmin=-0.25, vmax=0.25))
+    return plot
