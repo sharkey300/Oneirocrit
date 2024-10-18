@@ -4,15 +4,65 @@
     padding: 0;
 }
 
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 body {
-    background-color: lightyellow
+    background-color: lightyellow;
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    margin: 5px;
+    margin-bottom: 0px;
+    height: 40px;
+}
+
+.title em {
+    font-size: 16px;
+    font-weight: 400;
+    color: #24292f;
+    align-self: last baseline;
+    margin-bottom: 7px; 
+    white-space: pre;
+}
+
+.title img {
+    height: 40px;
+    margin-right: 5px;
+}
+
+.title button {
+    margin-left: auto;
+    margin-right: 5px;
+}
+
+.title p {
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.github {
+    height: 40px;
+    margin-left: 5px;
+    display: inline !important;
+}
+
+.github svg {
+    height: 40px;
 }
 
 .container {
-    /* display the contents side by side */
     display: flex;
-    height: calc(100vh - 10px);
+    height: auto;
     margin: 5px 2px;
+    flex-grow: 1;
 }
 
 .nav,
