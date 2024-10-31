@@ -61,8 +61,9 @@ body {
 .container {
     display: flex;
     height: auto;
-    margin: 5px 2px;
+    padding: 5px 2px;
     flex-grow: 1;
+    max-height: calc(100% - 45px);
 }
 
 .nav,
